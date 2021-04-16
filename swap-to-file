@@ -1,0 +1,67 @@
+#!/bin/bash
+#
+#
+#  swap-to-file -- Create a Linux Swap File
+#  v 1.0.0
+#
+#  Copyright @ 2021 Petr Fojt <petr.fojt@seznam.cz>
+#
+
+#
+#  Create swapfile 10GB
+#  swap-to-file -s 10
+#
+#  Remove swapfile
+#  swap-to-file -r
+#
+
+make_swap () {
+    ((size=$size*1024*1024))
+    mkdir /swap > /dev/null 2<&1
+    dd if=/dev/zero of=/swap/swapfile1 bs=1024 count=$size
+    mkswap /swap/swapfile1
+    chown root:root /swap/swapfile1
+    swapon /swap/swapfile1
+    echo 'swapon /swap/swapfile1' >> /etc/rc.local
+    echo ".. done --"
+}
+
+remove_swap () {
+    swapoff /swap/swapfile1
+    rm /swap/swapfile1
+    rmdir /swap
+    sed -i '/swapon \/swap\/swapfile1/d' /etc/rc.local
+    echo ".. done --"
+}
+
+while [ "$1" != "" ]; do
+    case $1 in
+        -s | --size )
+    	    shift
+            size="$1"
+	    re='^[0-9]+$'
+	    if ! [[ $size =~ $re ]] ; then
+		echo "size parameter is not a number" >&2
+		exit 1
+	    fi
+	    if (( $size > 100 )) ; then
+		echo "swap size is too big"
+		exit 1
+	    fi
+	    if (( $size < 1 )) ; then
+		echo "swap size is too small"
+		exit 1
+	    fi
+	    make_swap
+	    ;;
+	-r | --remove )
+	    remove_swap
+	    exit 1
+	    ;;
+	* )
+	    echo "unknown option $1"
+	    exit 1
+    esac
+    shift
+done
+
