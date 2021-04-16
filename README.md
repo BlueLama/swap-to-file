@@ -1,12 +1,12 @@
-Create Linux Swap File
+# Create Linux Swap File
+## Usage
 
-
-
-Create swapfile 10GB
-
- swap-to-file -s 10
+Create 10GB swapfile
+```sh
+swap-to-file -s 10
+```
 
 Remove swapfile
-
- swap-to-file -r
-
+```sh
+swap-to-file -r
+```
